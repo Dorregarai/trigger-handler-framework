@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>Hierarchy</customSettingsType>
+    <description>Turn off mechanism for triggers. Add the boolean field with name of the method and set to TRUE to bypass the logic of the method.</description>
+    <enableFeeds>false</enableFeeds>
+    <label>triggersettings</label>
+    <visibility>Public</visibility>
+</CustomObject>

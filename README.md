@@ -1,19 +1,60 @@
-# Salesforce DX Project: Next Steps
-
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
-
-## How Do You Plan to Deploy Your Changes?
-
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
-
-## Configure Your Salesforce DX Project
-
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
-
-## Read All About It
-
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
 # trigger-handler-framework
+To use the trigger handler framework you need to deploy AbstractTriggerImpl.cls, AbstractTriggerImplTest.cls and the triggersettings__c Custom Serttings into your org.
+
+## How to use it
+- Implement (public YourClassName extends AbstractTriggerImpl) the AbstractTriggerImpl.cls
+- Create the new field in the `triggersettings__c` custom setting `Name = <Object>TriggerHandler Type = checkbox`
+- Create the new fields in the `triggersettings__c` custom setting for each new method with `Name = <methodName> Type = checkbox`
+- Add following structure to the triggerhandler class:
+```
+    private static <Object>TriggerHandler instance = null;
+    public static Boolean deactivateTrigger = false;
+
+	private <Object>TriggerHandler() {}
+
+	//imporant method, with this instace you work in the doX() methods!
+    public static <Object>TriggerHandler getInstance() {
+        instance = new <Object>TriggerHandler();
+        return instance;
+    }
+    
+    public override Boolean getDisable() {
+        return deactivateTrigger;
+    }   
+    
+    /* Custom settings field name for disabling trigger */
+    public override String getCustomSettingFieldName() {
+        return '<Object>TriggerHandler';
+    }
+    
+    public override AbstractTriggerImpl doInsert(List<Sobject> newList, Boolean isBefore, Boolean isAfter) {
+		System.debug('### <Object>TriggerHandler.doInsert()');
+        if(isBefore) {
+
+		}
+
+		if(isAfter) {
+			System.debug('### <Object>TriggerHandler.doInsert() isAfter');
+			instance = handleInsert((List<<Object>>) newList)
+					    .sendEmailNotification_AIU((List<<Object>>) newList);
+		}
+
+		return this;
+	}
+
+	public override AbstractTriggerImpl doUpdate(List<Sobject> oldList, List<Sobject> newList, Map<Id, Sobject> oldMap, Boolean isBefore, Boolean isAfter) {        
+		if(isBefore) {
+
+		}
+
+		if(isAfter) {
+			instance = handleUpdate((List<<Object>>) newList, (Map<Id, <Object>>) oldMap);
+		}
+
+		return this;
+	}
+```
+- Now you can activate / deactivate the whole trigger or just some methods from the custom setting by setting checkbox to `TRUE` for in needed field
+- Also you can turn off the trigger from the code by setting the `deactivateTrigger` class-variable to `TRUE`
+- ???
+- Enjoy :)
