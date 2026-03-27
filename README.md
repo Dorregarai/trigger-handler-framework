@@ -1,8 +1,8 @@
 # trigger-handler-framework
-To use the trigger handler framework you need to deploy AbstractTriggerImpl.cls, AbstractTriggerImplTest.cls and the triggersettings__c Custom Serttings into your org.
+To use the trigger handler framework you need to deploy _AbstractTriggerImpl.cls_, _AbstractTriggerImplTest.cls_ and the _triggersettings__c_ Custom Serttings into your org.
 
 ## How to use it
-- Implement (public YourClassName extends AbstractTriggerImpl) the AbstractTriggerImpl.cls
+- Implement (`public YourClassName extends AbstractTriggerImpl`) the _AbstractTriggerImpl.cls_
 - Create the new field in the `triggersettings__c` custom setting `Name = <Object>TriggerHandler Type = checkbox`
 - Create the new fields in the `triggersettings__c` custom setting for each new method with `Name = <methodName> Type = checkbox`
 - Add following structure to the triggerhandler class:
