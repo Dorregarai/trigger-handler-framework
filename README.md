@@ -35,8 +35,8 @@ To use the trigger handler framework you need to deploy _AbstractTriggerImpl.cls
 
 		if(isAfter) {
 			System.debug('### <Object>TriggerHandler.doInsert() isAfter');
-			instance = handleInsert((List<<Object>>) newList)
-					    .sendEmailNotification_AIU((List<<Object>>) newList);
+			instance = anyMethod_AI((List<<Object>>) newList)
+					    .secondAnyMethod_AIU((List<<Object>>) newList, (Map<Id, <Object>>) oldMap);
 		}
 
 		return this;
@@ -48,7 +48,8 @@ To use the trigger handler framework you need to deploy _AbstractTriggerImpl.cls
 		}
 
 		if(isAfter) {
-			instance = handleUpdate((List<<Object>>) newList, (Map<Id, <Object>>) oldMap);
+			instance = anyMethod_AU((List<<Object>>) newList, (Map<Id, <Object>>) oldMap)
+						.secondAnyMethod_AIU((List<<Object>>) newList, (Map<Id, <Object>>) oldMap);
 		}
 
 		return this;
