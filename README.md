@@ -113,14 +113,11 @@ You can configure max execution count per transaction.
 
 > [!Note]
 > This allows controlled recursion rather than blocking it completely. By default, it is set to 10.
-
-### Example
-
-````apex
-    private ObjectTriggerHandler(){
-        this.setMaxLoopCount(40);
-    }
-````
+> ````apex
+>     private ObjectTriggerHandler(){
+>         this.setMaxLoopCount(40);
+>     }
+> ````
 
 ## Execution Flow
 
