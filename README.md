@@ -1,61 +1,124 @@
-# trigger-handler-framework
-To use the trigger handler framework you need to deploy _AbstractTriggerImpl.cls_, _AbstractTriggerImplTest.cls_ and the _triggersettings__c_ Custom Serttings into your org.
+# Trigger handler framework
+This is a lightweight trigger framework for Salesforce designed to keep your triggers clean and maintainable.
 
-## How to use it
-- Implement (`public YourClassName extends AbstractTriggerImpl`) the _AbstractTriggerImpl.cls_
-- Create the new field in the `triggersettings__c` custom setting `Name = <Object>TriggerHandler Type = checkbox`
-- Create the new fields in the `triggersettings__c` custom setting for each new method with `Name = <methodName> Type = checkbox`
-- Add following structure to the triggerhandler class:
-```
-    private static <Object>TriggerHandler instance = null;
-    public static Boolean deactivateTrigger = false;
-
-	private <Object>TriggerHandler() {}
-
-	//imporant method, with this instace you work in the doX() methods!
-    public static <Object>TriggerHandler getInstance() {
-        instance = new <Object>TriggerHandler();
-        return instance;
+## Quick Start
+1. Deploy the provided package.xml (includes core framework classes).
+2. Create a trigger:
+````apex
+    trigger ObjectTrigger on Object (before insert, before delete, after insert, after update) {
+        ObjectHandler handler = ObjectHandler.getInstance();
     }
-    
-    public override Boolean getDisable() {
-        return deactivateTrigger;
-    }   
-    
-    /* Custom settings field name for disabling trigger */
-    public override String getCustomSettingFieldName() {
-        return '<Object>TriggerHandler';
+````
+3. Create handler:
+````apex
+    public with sharing class ObjectTriggerHandler extends AbstractTriggerImpl {
+        private static ObjectTriggerHandler instance = null;
+        public static Boolean deactivateTrigger = false;
+
+        private ObjectTriggerHandler() {
+            this.setMaxLoopCount(1);    // recursion control
+        }
+
+        // Important: use this instance inside doX() methods
+        public static ObjectTriggerHandler getInstance() {
+            instance = new ObjectTriggerHandler();
+            return instance;
+        }
+        
+        public override Boolean getDisable() {
+            return deactivateTrigger;
+        }   
+        
+        /* Custom settings field name for disabling trigger */
+        public override String getCustomSettingFieldName() {
+            return 'ObjectTriggerHandler';
+        }
+        
+        // Each doX method handles both before and after contexts using isBefore / isAfter flags.
+        public override AbstractTriggerImpl doInsert(List<Sobject> newList, Boolean isBefore, Boolean isAfter) {
+            System.debug('### ObjectTriggerHandler.doInsert()');
+            if(isBefore) {
+
+            }
+
+            if(isAfter) {
+                System.debug('### ObjectTriggerHandler.doInsert() isAfter');
+                instance = firstMethod_AI((List<Object>) newList)
+                            .secondMethod_AIU((List<Object>) newList);
+            }
+
+            return this;
+        }
+
+        public override AbstractTriggerImpl doUpdate(List<Sobject> oldList, List<Sobject> newList, Map<Id, Sobject> oldMap, Boolean isBefore, Boolean isAfter) {        
+            if(isBefore) {
+
+            }
+
+            if(isAfter) {
+                instance = firstMethod_AU((List<Object>) newList, (Map<Id, Object>) oldMap)
+                            .secondMethod_AIU((List<Object>) newList);
+            }
+
+            return this;
+        }
+
+        private ObjectTriggerHandler secondMethod_AIU((List<Object>) newList) {
+            try {
+                if (triggersettings__c.getInstance() != null && triggersettings__c.getinstance().secondMethod_AIU__c) {
+                    System.debug('### secondMethod_AIU is disabled.');
+                    return this;
+                }
+            } catch (exception e) {
+                //ignore Exceptions related to TriggerSettings
+            }
+
+            // your logic here
+        }
     }
-    
-    public override AbstractTriggerImpl doInsert(List<Sobject> newList, Boolean isBefore, Boolean isAfter) {
-		System.debug('### <Object>TriggerHandler.doInsert()');
-        if(isBefore) {
+````
+4. Go to Setup → Custom settings → Find `triggersettings__c` custom setting (included in the package). Create corresponding fields for the Object itself and for each method that you call from the doX() methods. These fields are used to control trigger execution. If set to **TRUE** — the method (or entire trigger) will be skipped.
+````apex
+    private ObjectTriggerHandler secondMethod_AIU((List<Object>) newList) {
+        try {
+            if (triggersettings__c.getInstance() != null && triggersettings__c.getinstance().secondMethod_AIU__c) {
+                System.debug('### secondMethod_AIU is disabled.');
+                return this;
+            }
+        } catch (exception e) {
+            //ignore Exceptions related to TriggerSettings
+        }
+    }
+````
+> [!Note]
+> Handlers support method chaining to execute multiple operations in sequence. Each method returns the handler instance.
+> instance = firstMethod_AU((List<Object>) newList, (Map<Id, Object>) oldMap)
+>            .secondMethod_AIU((List<Object>) newList);
 
-		}
+## Why use this?
 
-		if(isAfter) {
-			System.debug('### <Object>TriggerHandler.doInsert() isAfter');
-			instance = anyMethod_AI((List<<Object>>) newList)
-					    .secondAnyMethod_AIU((List<<Object>>) newList, (Map<Id, <Object>>) oldMap);
-		}
+- Keeps triggers clean and logic-free
+- Supports bulk operations
+- Handling recursion issues
+- Improves testability
+- Encourages separation of concerns
 
-		return this;
-	}
+## Recursion Control
 
-	public override AbstractTriggerImpl doUpdate(List<Sobject> oldList, List<Sobject> newList, Map<Id, Sobject> oldMap, Boolean isBefore, Boolean isAfter) {        
-		if(isBefore) {
+This framework uses a loop counter to prevent infinite trigger recursion.
+You can configure max execution count per transaction.
 
-		}
+> [!Note]
+> This allows controlled recursion rather than blocking it completely. By default, it is set to 10.
 
-		if(isAfter) {
-			instance = anyMethod_AU((List<<Object>>) newList, (Map<Id, <Object>>) oldMap)
-						.secondAnyMethod_AIU((List<<Object>>) newList, (Map<Id, <Object>>) oldMap);
-		}
+### Example
 
-		return this;
-	}
-```
-- Now you can activate / deactivate the whole trigger or just some methods from the custom setting by setting checkbox to `TRUE` for in needed field
-- Also you can turn off the trigger from the code by setting the `deactivateTrigger` class-variable to `TRUE`
-- ???
-- Enjoy :)
+````apex
+    private ObjectTriggerHandler(){
+        this.setMaxLoopCount(40);
+    }
+````
+
+## Execution Flow
+
+Trigger → Handler → doX() → custom methods
