@@ -2,7 +2,7 @@
 This is a lightweight trigger framework for Salesforce designed to keep your triggers clean and maintainable.
 
 ## Quick Start
-1. Deploy the provided package.xml (includes core framework classes).
+1. Deploy the provided ./manifest/package.xml (includes core framework classes).
 2. Create a trigger:
 ````apex
     trigger ObjectTrigger on Object (before insert, before delete, after insert, after update) {
