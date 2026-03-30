@@ -93,8 +93,9 @@ This is a lightweight trigger framework for Salesforce designed to keep your tri
 > [!Note]
 > Handlers support method chaining to execute multiple operations in sequence. Each method returns the handler instance.
 > 
->````apex instance = firstMethod_AU((List<Object>) newList, (Map<Id, Object>) oldMap)
->                    .secondMethod_AIU((List<Object>) newList);
+>````apex
+> instance = firstMethod_AU((List<Object>) newList, (Map<Id, Object>) oldMap)
+>            .secondMethod_AIU((List<Object>) newList);
 >````
 
 ## Why use this?
